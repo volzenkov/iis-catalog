@@ -1,0 +1,166 @@
+.body {
+    background-image: url(/iis-catalog/resources/background.jpg);
+}
+
+#headerDiv {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    background-image: url(/iis-catalog/resources/header.png);
+}
+#headerDiv a {
+    color: cornsilk;
+}
+
+#loginDiv {
+    position: relative;
+    right: 5px;
+    text-align: right;
+    top: -10px;
+    width: 100%;
+}
+
+#headerSpan {
+    text-align: center;
+    font: 20pt sans-serif;
+    padding: 10px;
+}
+
+#searchDiv {
+    /*width: 100px;*/
+    border: 1px dotted;
+    float: right;
+}
+
+#iisLink {
+    padding: 3px;
+    position: relative;
+    top: 10px;
+    font-size: 1.1em;
+}
+
+#chaptersList ui-datalist-data ul {
+    padding-left: 5px !important;
+}
+
+.chapter-list-item-icon {
+    float: left;
+    position: relative;
+    top: 3px;
+    padding-right: 5px;
+}
+
+#chaptersList .ui-widget-content {
+    border: none !important;
+    background: inherit;
+}
+
+.chapterListItem {
+    padding: 10px 10px;
+}
+
+.chapterListItem a {
+    font-family: Arial, sans-serif !important;
+    font-size: 14pt;
+    color: #4F4F4F !important;
+}
+.chapterListItem .add-item-icon  {
+    margin-right: -1px !important;
+}
+
+.categoryListItem a {
+    font-family: Arial, sans-serif !important;
+    font-size: 14pt;
+    color: #4F4F4F !important;
+}
+
+#categoriesList .ui-widget-content {
+    border: none !important;
+    background: inherit;
+}
+
+.chapterListItemTitle {
+    padding: 27px 10px 10px;
+}
+
+.categoryListItem {
+    padding: 10px 5px 10px 30px;
+}
+
+.documentListItem {
+    padding: 5px 5px 5px 50px;
+}
+
+#documentsList .ui-widget-content {
+    border: none !important;
+    background: inherit;
+}
+
+#documentsList .ui-widget-content .ui-panelgrid td {
+    padding: 0;
+    margin: 10px 3px;
+}
+
+#documentsList {
+    margin-top: -15px;
+}
+
+.documentListItem .ui-panelgrid td {
+    border: none !important;
+}
+
+.mainDiv {
+    width: 900px;
+    margin: 0 auto;
+}
+
+.contentDiv .ui-widget-content {
+
+
+}
+
+.chapter-item-prefix {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.add-item-icon {
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+.category-item-prefix {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+
+.ui-widget .downloadButton {
+    background-image: url(/iis-catalog/resources/document-can-download.png);
+    height: 43px;
+    width: 40px;
+    border-radius: 25px;
+}
+.ui-state-default .downloadButton {
+    background-image: url(/iis-catalog/resources/document-can-download.png);
+    border-radius: 25px;
+}
+
+.uploadDiv {
+    height: 260px;
+}
+
+.uploadDiv .fileupload-content {
+    height: 200px !important;
+}
+
+.catalogItemsNotFound {
+    font-family: Arial,sans-serif;
+    font-size: 13pt !important;
+    text-align: center;
+    padding: 30px;
+}
+
+.ui-datatable-empty-message {
+    text-align: center;
+}

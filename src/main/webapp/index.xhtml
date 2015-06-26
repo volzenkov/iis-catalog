@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="css/default.css"/>
+
+</h:head>
+
+<h:body styleClass="body">
+    <style type="text/css">
+
+        #form ul {
+            list-style-type: none;
+            padding: 0;
+            margin-left: 0;
+        }
+
+    </style>
+    <div class="mainDiv">
+
+        <ui:insert name="header">
+            <ui:include src="/header.xhtml"/>
+        </ui:insert>
+
+        <div class="contentDiv">
+            <h:form id="form" prependId="false">
+                <h:panelGroup layout="block" rendered="#{chapterController.chaptersList.size() == 0}"
+                              class="catalogItemsNotFound">
+                    <p:outputLabel value="Доступных материалов не найдено"/>
+                </h:panelGroup>
+                <p:dataList value="#{chapterController.chaptersList}" var="chapter" itemType="dics" id="chaptersList">
+                    <h:panelGroup layout="block" rendered="#{!(userBean.currentUser == null and chapter.hidden)}"
+                                  class="chapterListItem">
+
+                        <div class="chapterTitleItem">
+                            <p:graphicImage styleClass="chapter-item-prefix"
+                                            value="/resources/chapter-item-prefix.png"/>
+                            <p:commandLink id="selectChapterLink" value="${chapter.name}"
+                                           action="#{chapterController.selectChapter(chapter)}"
+                                           style="vertical-align: middle; font-size: 15pt !important;"/>
+                            <span style="float: right; vertical-align: middle">
+                            <p:commandLink rendered="#{userBean.isUserCanEditCatalogItem(chapter)}"
+                                           id="editChapterLink">
+                                <p:graphicImage styleClass="chapter-item-prefix"
+                                                value="/resources/edit-icon.png"/>
+                            </p:commandLink>
+                            </span>
+                        </div>
+                        <p:tieredMenu rendered="#{userBean.isUserCanEditCatalogItem(chapter)}" overlay="true"
+                                      trigger="editChapterLink" my="left top" at="left bottom" style="width:250px">
+                            <p:menuitem value="Редактировать раздел"
+                                        action="#{chapterController.initEditChapterDialog(chapter)}"
+                                        oncomplete="editChapterDlg.show()" icon="ui-icon-pencil"/>
+                            <p:menuitem value="Изменить редакторов" action="#{userBean.refreshEditorsList(chapter)}"
+                                        oncomplete="editEditorsDlg.show()" icon="ui-icon-pencil"/>
+                            <p:menuitem value="Удалить" action="#{chapterController.removeChapter(chapter)}"
+                                        update="chaptersList"
+                                        oncomplete="this.hide()" icon="ui-icon-close"/>
+                        </p:tieredMenu>
+                    </h:panelGroup>
+                </p:dataList>
+
+                <p:dialog header="Редактировать раздел" showEffect="fade" widgetVar="editChapterDlg" modal="true"
+                          dynamic="true" closable="false">
+                    <p:outputPanel id="editChapterPanel" autoUpdate="true">
+                        <h:panelGrid columns="2" id="editChapterPanelGrid">
+                            <h:outputLabel for="editChapterName" value="Имя раздела: *"/>
+                            <p:inputText id="editChapterName" value="#{chapterController.chapterForEdit.name}"
+                                         required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="255"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="editChapterName"/>
+                            <h:outputLabel for="editChapterDescription" value="Описание раздела: *"/>
+                            <p:inputText id="editChapterDescription"
+                                             value="#{chapterController.chapterForEdit.description}" required="true"
+                                             size="30"
+                                             requiredMessage="Заполните обязательное поле"
+                                             validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="255"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="editChapterDescription"/>
+                            <h:outputLabel for="editChapterIsPublic" value="Скрывать от гостей: "/>
+                            <p:selectBooleanCheckbox id="editChapterIsPublic"
+                                                     value="#{chapterController.chapterForEdit.hidden}"/>
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2" style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="editChapterDlg.hide()" immediate="true"/>
+                            <p:commandButton value="Сохранить" style="margin: 5px 25px;"
+                                             action="#{chapterController.updateChapter()}"
+                                             update="chaptersList"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+        </div>
+    </div>
+
+</h:body>
+</html>
+
+

@@ -1,0 +1,139 @@
+<ui:composition name="header"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <h:form id="headerMsgForm" prependId="false">
+        <p:growl id="growl" showDetail="false" sticky="true"/>
+    </h:form>
+
+    <h:form id="headerLinksForm" prependId="false">
+
+        <div id="headerDiv">
+            <div id="headerSpan">
+                <p:commandLink action="toChapters" value="Каталог методических материалов кафедры ИИС НТУ ХПИ"/>
+            </div>
+            <div>
+                <h:outputLink value="http://khpi-iip.mipk.kharkiv.edu/"
+                              id="iisLink">Портал кафедры ИИС</h:outputLink>
+
+                <h:form id="headerForm" prependId="false">
+                    <h:panelGroup id="loginDiv" layout="block">
+                        <p:commandLink rendered="#{userBean.isUserAdmin()}" action="#{userBean.initNewChapterDlg()}"
+                                       oncomplete="newChapterDlg.show()" value="Добавить раздел"/>
+                        <h:outputLabel rendered="#{userBean.isUserAdmin()}" value=" | "/>
+                        <p:commandLink action="toUsers" rendered="#{userBean.isUserAdmin()}"
+                                       value="Редактировать пользователей"/>
+                        <h:outputLabel rendered="#{userBean.isUserAdmin()}" value=" | "/>
+                        <p:commandLink action="#{userBean.doLogout}" rendered="#{userBean.currentUser != null}"
+                                       value="Выйти"
+                                       update="loginDiv, :headerMsgForm:growl"/>
+                        <p:commandLink action="#{userBean.initLoginDialog}" oncomplete="loginDlg.show()"
+                                       rendered="#{userBean.currentUser == null}" value="Вход"/>
+                    </h:panelGroup>
+
+                    <p:dialog header="Создать раздел" showEffect="fade" widgetVar="newChapterDlg" modal="true"
+                              dynamic="true" closable="false">
+                        <p:outputPanel id="newChapterPanel" autoUpdate="true">
+                            <h:panelGrid columns="2" id="newChapterPanelGrid">
+                                <h:outputLabel for="newChapterName" value="Имя раздела: *"/>
+                                <p:inputText id="newChapterName" value="#{userBean.newChapter.name}"
+                                             required="true" size="30"
+                                             requiredMessage="Заполните обязательное поле"
+                                             validatorMessage="Недопустимое значение">
+                                    <f:validateLength minimum="3" maximum="255"/>
+                                </p:inputText>
+                                <h:outputLabel/>
+                                <p:message for="newChapterName"/>
+                                <h:outputLabel for="newChapterDescription" value="Описание раздела: *"/>
+                                <p:inputText id="newChapterDescription"
+                                             value="#{userBean.newChapter.description}" required="true" size="30"
+                                             requiredMessage="Заполните обязательное поле"
+                                             validatorMessage="Недопустимое значение">
+                                    <f:validateLength minimum="3" maximum="255"/>
+                                </p:inputText>
+                                <h:outputLabel/>
+                                <p:message for="newChapterDescription"/>
+                                <h:outputLabel for="newChapterIsPublic" value="Скрывать от гостей: "/>
+                                <p:selectBooleanCheckbox id="newChapterIsPublic"
+                                                         value="#{userBean.newChapter.hidden}"/>
+                            </h:panelGrid>
+                            <h:panelGroup layout="block" columns="2" style="text-align: center">
+                                <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                                 oncomplete="newChapterDlg.hide()"/>
+                                <p:commandButton value="Сохранить" style="margin: 5px 25px;"
+                                                 action="#{userBean.addChapter()}"/>
+                            </h:panelGroup>
+                        </p:outputPanel>
+                    </p:dialog>
+
+
+                    <p:dialog header="Вход" showEffect="fade" widgetVar="loginDlg" modal="true"
+                              dynamic="true" closable="false">
+                        <p:outputPanel id="loginPanel" autoUpdate="true">
+                            <h:panelGrid columns="2" id="loginPanelGrid">
+                                <h:outputLabel for="loginName" value="Логин: *"/>
+                                <p:inputText id="loginName" value="#{userBean.login}" required="true" size="20"
+                                             requiredMessage="Заполните обязательное поле"
+                                             validatorMessage="Недопустимое значение">
+                                    <f:validateLength minimum="3" maximum="255"/>
+                                </p:inputText>
+                                <h:outputLabel for="loginTitle" value="Пароль: *"/>
+                                <p:password id="loginTitle" value="#{userBean.password}" required="true" size="20"
+                                             requiredMessage="Заполните обязательное поле"
+                                             validatorMessage="Недопустимое значение">
+                                    <f:validateLength minimum="3" maximum="255"/>
+                                    <h:outputLabel/>
+                                </p:password>
+                                <h:outputLabel/>
+                            </h:panelGrid>
+
+                            <h:panelGroup layout="block" columns="2" style="text-align: center">
+                                <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                                 oncomplete="loginDlg.hide()" immediate="true"/>
+                                <p:commandButton value="Вход" style="margin: 5px 25px;"
+                                                 action="#{userBean.doLogin}"
+                                                 update="loginDiv, :headerMsgForm:growl"/>
+                            </h:panelGroup>
+
+                        </p:outputPanel>
+                    </p:dialog>
+                </h:form>
+
+            </div>
+        </div>
+    </h:form>
+
+    <h:form id="editPermissionsForm">
+        <p:dialog header="Изменить редакторов" showEffect="fade" widgetVar="editEditorsDlg" modal="true"
+                  dynamic="true"
+                  closable="false">
+            <p:outputPanel id="editPermissionsPanel" autoUpdate="true">
+
+                <p:pickList id="pojoPickList" value="#{userBean.editorsDualListModel}" var="userItem"
+                            itemValue="#{userItem.userId}" itemLabel="#{userItem.login}" showCheckbox="true"
+                            showSourceFilter="true" showTargetFilter="true" filterMatchMode="contains">
+
+                    <f:facet name="sourceCaption">Пользователи</f:facet>
+                    <f:facet name="targetCaption">Редакторы</f:facet>
+
+                    <p:column>
+                        #{userItem.login}
+                    </p:column>
+
+                </p:pickList>
+
+                <h:panelGroup layout="block" columns="2" style="text-align: center">
+                    <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                     oncomplete="editEditorsDlg.hide()" immediate="true"/>
+                    <p:commandButton value="Сохранить" style="margin: 5px 25px;"
+                                     action="#{userBean.updateEditorsList()}"/>
+                </h:panelGroup>
+
+            </p:outputPanel>
+        </p:dialog>
+    </h:form>
+
+</ui:composition>

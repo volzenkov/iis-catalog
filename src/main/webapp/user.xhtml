@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="css/default.css"/>
+
+</h:head>
+
+<h:body>
+    <h:panelGroup layout="block" class="mainDiv">
+
+        <ui:insert name="header">
+            <ui:include src="/header.xhtml"/>
+        </ui:insert>
+
+        <h:panelGroup layout="block" class="contentDiv">
+            <h:form id="form" prependId="false">
+
+                <h:panelGroup layout="block" rendered="#{userBean.currentUser != null}"/>
+
+                <p:dataTable var="user" value="#{userController.usersList}" rowKey="#{user.userId}" paginator="true"
+                             rows="10" editable="true"
+                             selection="#{userController.selectedUsers}"
+                             filteredValue="#{userController.filteredUsers}"
+                             id="usersTable"
+                             emptyMessage="Записи не найдены">
+
+
+                    <p:ajax event="rowEdit" listener="#{userController.onEdit}" update=":headerMsgForm:growl"/>
+
+                    <f:facet name="header">
+                        Список пользователей каталога
+                    </f:facet>
+
+                    <p:column selectionMode="multiple" style="width:2%"/>
+
+                    <p:column headerText="Логин" sortBy="#{user.login}" filterBy="#{user.login}">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{user.login}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{user.login}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Пароль" sortBy="#{user.password}" filterBy="#{user.password}">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{user.password}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{user.password}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Тип пользователя" sortBy="#{user.password}" filterBy="#{user.password}">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{user.userType}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <h:selectOneMenu value="#{user.userType}">
+                                    <f:selectItems value="#{userTypeBean.userTypes}"
+                                                   var="type"
+                                                   itemLabel="#{type}"
+                                                   itemValue="#{type}"/>
+                                </h:selectOneMenu>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column headerText="Электронная почта" sortBy="#{user.email}" filterBy="#{user.email}">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{user.email}"/>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText value="#{user.email}" style="width:100%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column style="width:5%">
+                        <p:rowEditor/>
+                    </p:column>
+
+                </p:dataTable>
+                <div style="text-align: center">
+                <p:commandButton value="Добавить пользователя" action="#{userController.initNewUserDialog()}"
+                                 oncomplete="newUserDlg.show()" style="margin: 5px 25px"
+                                 update="usersTable, :headerMsgForm:growl"/>
+                <p:commandButton id="removeBtn" value="Удалить пользователей" onclick="confirmation.show()" style="margin: 5px 25px"/>
+                </div>
+                <p:confirmDialog id="confirmDialog" message="Вы уверены ?"
+                                 header="Удалить пользователей" severity="alert" widgetVar="confirmation" >
+
+                    <p:commandButton id="confirm" value="Да" oncomplete="confirmation.hide()"
+                                     action="#{userController.removeUsers()}" update="usersTable, :headerMsgForm:growl"/>
+                    <p:commandButton id="decline" value="Отмена" onclick="confirmation.hide()" type="button"/>
+
+                </p:confirmDialog>
+            </h:form>
+
+            <h:form prependId="false">
+                <p:dialog header="Добавить пользователя" showEffect="fade" widgetVar="newUserDlg" modal="true"
+                          dynamic="true" closable="false">
+                    <p:outputPanel id="newUserPanel" autoUpdate="true">
+                        <h:panelGrid columns="2" id="newUserPanelGrid">
+                            <h:outputLabel for="newUserLogin" value="Логин: *"/>
+                            <p:inputText id="newUserLogin" value="#{userController.newUser.login}"  required="true" size="20"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="40"/>
+                                <p:ajax event="blur" listener="#{userController.checkUniqueLogin}"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="newUserLogin"/>
+                            <h:outputLabel for="newUserPwd" value="Пароль: *"/>
+                            <p:inputText id="newUserPwd" value="#{userController.newUser.password}"  required="true" size="20"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="40"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="newUserPwd"/>
+                            <h:outputLabel value="Тип пользователя: "/>
+                            <h:selectOneMenu value="#{userController.newUser.userType}">
+                                <f:selectItems value="#{userTypeBean.userTypes}"
+                                               var="type"
+                                               itemLabel="#{type}"
+                                               itemValue="#{type}"/>
+                            </h:selectOneMenu>
+                            <h:outputLabel for="newUserEmail" value="Почта: "/>
+                            <p:inputText id="newUserEmail" value="#{userController.newUser.email}"/>
+                            <p:message for="newUserEmail"/>
+
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2" style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="newUserDlg.hide()" immediate="true"/>
+                            <p:commandButton value="Создать" style="margin: 5px 25px;"
+                                             action="#{userController.addUser()}"
+                                             update=":form:usersTable"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+            </h:form>
+
+
+        </h:panelGroup>
+    </h:panelGroup>
+
+</h:body>
+</html>
+
+

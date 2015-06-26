@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="css/default.css"/>
+
+</h:head>
+
+<h:body styleClass="body">
+    <style type="text/css">
+
+        #form ul {
+            list-style-type: none;
+            padding: 0;
+            margin-left: 0;
+            margin-top: 0;
+        }
+
+    </style>
+    <div class="mainDiv">
+
+        <ui:insert name="header">
+            <ui:include src="/header.xhtml"/>
+        </ui:insert>
+
+        <div class="contentDiv">
+            <h:form id="form" prependId="false">
+
+                <div class="chapterListItem chapterListItemTitle">
+                    <p:graphicImage styleClass="chapter-item-prefix"
+                                    value="/resources/chapter-item-prefix.png"/>
+                    <p:commandLink value="#{categoryController.parentChapter.name}" action="toChapters"
+                                   style="vertical-align: middle; font-size: 15pt !important;"/>
+                    <p:commandLink rendered="#{userBean.isUserCanEditCatalogItem(categoryController.parentChapter)}"
+                                   action="#{categoryController.initNewCategoryDialog()}"
+                                   oncomplete="newCategoryDlg.show()"
+                                   id="editCategoryLink" style="float: right">
+                        <p:graphicImage styleClass="add-item-icon"
+                                        value="/resources/add-icon.png"/>
+                    </p:commandLink>
+
+                </div>
+
+                <h:panelGroup layout="block" rendered="#{categoryController.categoriesList.size() == 0}"
+                              class="catalogItemsNotFound">
+                    <p:outputLabel value="Доступных материалов не найдено"/>
+                </h:panelGroup>
+                <p:dataList value="#{categoryController.categoriesList}" var="category" id="categoriesList">
+
+                    <h:panelGroup layout="block" rendered="#{userBean.currentUser != null or !category.hidden}"
+                                  class="categoryListItem">
+
+                        <div class="categoryTitleItem">
+                            <p:graphicImage styleClass="category-item-prefix"
+                                            value="/resources/category-item-prefix.png"/>
+                            <p:commandLink value="${category.name}"
+                                           action="#{categoryController.selectCategory(category)}"
+                                           style="vertical-align: middle; font-size: 14pt !important;"/>
+                            <p:commandLink rendered="#{userBean.isUserCanEditCatalogItem(category)}"
+                                           id="editCategoryLink" style="float: right">
+                                <p:graphicImage styleClass="chapter-item-prefix"
+                                                value="/resources/edit-icon.png"/>
+                            </p:commandLink>
+                        </div>
+                        <p:tieredMenu rendered="#{userBean.isUserCanEditCatalogItem(category)}" overlay="true"
+                                      trigger="editCategoryLink" my="left top" at="left bottom" style="width:250px">
+                            <p:menuitem value="Редактировать категорию"
+                                        action="#{categoryController.initEditCategoryDialog(category)}"
+                                        oncomplete="editCategoryDlg.show()" icon="ui-icon-pencil"/>
+                            <p:menuitem value="Изменить редакторов" action="#{userBean.refreshEditorsList(category)}"
+                                        oncomplete="editEditorsDlg.show()" icon="ui-icon-pencil"/>
+                            <p:menuitem value="Удалить категорию"
+                                        action="#{categoryController.removeCategory(category)}"
+                                        update="categoriesList"
+                                        oncomplete="this.hide()" icon="ui-icon-close"/>
+                        </p:tieredMenu>
+                    </h:panelGroup>
+                </p:dataList>
+
+                <p:dialog header="Добавить категорию" showEffect="fade" widgetVar="newCategoryDlg" modal="true"
+                          dynamic="true">
+                    <p:outputPanel id="newCategoryPanel" autoUpdate="true">
+                        <h:panelGrid columns="2" id="newCategoryPanelGrid">
+                            <h:outputLabel for="newCategoryName" value="Имя категории: *"/>
+                            <p:inputText id="newCategoryName" value="#{categoryController.newCategory.name}"
+                                         required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="255"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="newCategoryName"/>
+
+                            <h:outputLabel for="newCategoryIsHidden" value="Скрывать от гостей: "/>
+                            <p:selectBooleanCheckbox id="newCategoryIsHidden"
+                                                     value="#{categoryController.newCategory.hidden}"/>
+                            <h:outputLabel/>
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2" style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="newCategoryDlg.hide()" immediate="true"/>
+                            <p:commandButton value="Создать" style="margin: 5px 25px;"
+                                             action="#{categoryController.addCategory()}"
+                                             update="categoriesList"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+
+                <p:dialog header="Редактировать категорию" showEffect="fade" widgetVar="editCategoryDlg" modal="true"
+                          dynamic="true">
+                    <p:outputPanel id="editCategoryPanel" autoUpdate="true">
+                        <h:panelGrid columns="2" id="editCategoryPanelGrid">
+                            <h:outputLabel for="editCategoryName" value="Имя категории: *"/>
+                            <p:inputText id="editCategoryName" value="#{categoryController.categoryForEdit.name}"
+                                         required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение">
+                                <f:validateLength minimum="3" maximum="255"/>
+                            </p:inputText>
+                            <h:outputLabel/>
+                            <p:message for="editCategoryName"/>
+                            <h:outputLabel for="editCategoryIsPublic" value="Скрывать от гостей: "/>
+                            <p:selectBooleanCheckbox id="editCategoryIsPublic"
+                                                     value="#{categoryController.categoryForEdit.hidden}"/>
+                            <p:message for="editCategoryIsPublic"/>
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2" style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="editCategoryDlg.hide()"/>
+                            <p:commandButton value="Сохранить" style="margin: 5px 25px;"
+                                             action="#{categoryController.updateCategory()}"
+                                             update="categoriesList"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+            </h:form>
+        </div>
+    </div>
+
+</h:body>
+</html>
+
+

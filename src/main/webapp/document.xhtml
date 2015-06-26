@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="css/default.css"/>
+
+
+    <script type="text/javascript">
+        function start() {
+            statusDialog.show();
+        }
+
+        function stop() {
+            statusDialog.hide();
+        }
+    </script>
+
+</h:head>
+
+<h:body styleClass="body">
+
+    <style type="text/css">
+
+        #form ul {
+            list-style-type: none;
+            padding: 0;
+            margin-left: 0;
+        }
+
+    </style>
+    <div class="mainDiv">
+
+        <ui:insert name="header">
+            <ui:include src="/header.xhtml"/>
+        </ui:insert>
+
+        <div class="contentDiv">
+            <h:form id="form" prependId="false">
+
+                <div class="chapterListItem chapterListItemTitle">
+                    <p:graphicImage styleClass="chapter-item-prefix"
+                                    value="/resources/chapter-item-prefix.png"/>
+                    <p:commandLink value="#{documentController.parentChapter.name}" action="toChapters"
+                                   style="vertical-align: middle; font-size: 15pt !important;"/>
+                </div>
+
+                <div class="categoryListItem">
+                    <p:graphicImage styleClass="category-item-prefix"
+                                    value="/resources/category-item-prefix.png"/>
+                    <p:commandLink value="#{documentController.parentCategory.name}" action="toCategories"
+                                   style="vertical-align: middle; font-size: 14pt !important;"/>
+                    <p:commandLink rendered="#{userBean.isUserCanEditCatalogItem(documentController.parentCategory)}"
+                                   action="#{documentController.initNewDocumentDialog()}"
+                                   oncomplete="newDocumentDlg.show()"
+                                   id="editCategoryLink" style="float: right">
+                        <p:graphicImage styleClass="add-item-icon"
+                                        value="/resources/add-icon.png"/>
+                    </p:commandLink>
+                </div>
+
+                <h:panelGroup layout="block" rendered="#{documentController.documentsList.size() == 0}"
+                              class="catalogItemsNotFound">
+                    <p:outputLabel value="Доступных материалов не найдено"/>
+                </h:panelGroup>
+
+                <p:dataList value="#{documentController.documentsList}" var="document" itemType="dics"
+                            id="documentsList">
+
+                    <h:panelGroup layout="block" rendered="#{!(userBean.currentUser == null and document.hidden)}"
+                                  class="documentListItem">
+
+                        <div>
+                            <p:panelGrid style="width: 100%;">
+                                <p:row>
+                                    <p:column width="90%">
+                                        <p:outputLabel value="${document.name}"/>
+                                    </p:column>
+                                    <p:column rowspan="2" style="width: 30px">
+
+                                        <p:dialog modal="true" widgetVar="statusDialog"
+                                                  draggable="false" closable="false" resizable="false">
+                                            <p:graphicImage value="/resources/ajax-loader.gif"/>
+                                        </p:dialog>
+                                        <p:commandButton id="downloadLink" ajax="true" styleClass="downloadButton"
+                                                         onclick="alert(${document.link}); PrimeFaces.monitorDownload(start, stop)"
+                                                         value="">
+                                            <p:fileDownload
+                                                    value="#{documentController.getDownloadLink(document.link)}"/>
+                                        </p:commandButton>
+
+                                    </p:column>
+                                    <p:column rowspan="2" style="width: 40px">
+                                        <p:commandLink rendered="#{userBean.isUserCanEditCatalogItem(document)}"
+                                                       id="editDocumentLink" style="float: right">
+                                            <p:graphicImage styleClass="chapter-item-prefix"
+                                                            value="/resources/edit-icon.png"/>
+                                        </p:commandLink>
+                                    </p:column>
+                                </p:row>
+                                <p:row>
+                                    <p:column>
+                                        <p:outputLabel value="${document.description}"
+                                                       style="font-size: 12pt !important;"/>
+                                    </p:column>
+                                </p:row>
+                            </p:panelGrid>
+
+                        </div>
+                        <p:tieredMenu rendered="#{userBean.isUserCanEditCatalogItem(document)}" overlay="true"
+                                      trigger="editDocumentLink" my="left top" at="left bottom" style="width:250px">
+                            <p:menuitem value="Редактировать описание"
+                                        action="#{documentController.initEditDocumentDialog(document)}"
+                                        oncomplete="editDocumentDlg.show()" icon="ui-icon-pencil"/>
+                            <p:menuitem value="Удалить" action="#{documentController.removeDocument(document)}"
+                                        update="documentsList"
+                                        oncomplete="this.hide()" icon="ui-icon-close"/>
+                        </p:tieredMenu>
+                    </h:panelGroup>
+                </p:dataList>
+
+
+                <p:dialog header="Редактирование описания документа" showEffect="fade" widgetVar="editDocumentDlg"
+                          modal="true"
+                          dynamic="true">
+                    <p:outputPanel id="editDocumentPanel" autoUpdate="true">
+                        <h:panelGrid columns="2" id="editDocumentPanelGrid">
+                            <h:outputLabel for="editDocumentName" value="Имя документа: *"/>
+                            <p:inputText id="editDocumentName" required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение"
+                                         value="#{documentController.documentForEdit.name}">
+                                <f:validateLength minimum="2"/>
+                            </p:inputText>
+                            <h:outputLabel/><p:message for="editDocumentName"/>
+                            <h:outputLabel for="editDocumentTitle" value="Описание документа: *"/>
+                            <p:inputText id="editDocumentTitle" required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение"
+                                         value="#{documentController.documentForEdit.description}">
+                                <f:validateLength minimum="2"/>
+                            </p:inputText>
+                            <h:outputLabel/><p:message for="editDocumentTitle"/>
+                            <h:outputLabel for="editDocumentIsPublic" value="Скрывать от гостей: "/>
+                            <p:selectBooleanCheckbox id="editDocumentIsPublic"
+                                                     value="#{documentController.documentForEdit.hidden}"/>
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2" style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="editDocumentDlg.hide()"/>
+                            <p:commandButton value="Сохранить" style="margin: 5px 25px;"
+                                             action="#{documentController.updateDocument()}"
+                                             update=":form:documentsList"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+
+            <h:form enctype="multipart/form-data" id="newDocumentForm">
+                <p:dialog header="Добавить документ" showEffect="fade" widgetVar="newDocumentDlg" modal="true"
+                          dynamic="true">
+                    <p:outputPanel id="newDocumentPanel" autoUpdate="true">
+
+
+                        <p:fileUpload fileUploadListener="#{documentController.handleFileUpload}"
+                                      update="messages2 newDocumentPanelGrid"
+                                      auto="true"
+                                      sizeLimit="10000000"
+                                      allowTypes="/(\.|\/)(doc|docx|pdf|txt|jpg|jpeg|zip|rar)$/"
+                                      process="@this"
+                                      rendered="#{documentController.newDocument.link == null}"
+                                      styleClass="uploadDiv"
+                                      label="Выбрать файл для загрузки"
+                                      required="true"
+                                      invalidFileMessage="Недопустимый формат файла"
+                                      invalidSizeMessage="Файл слишком большой"
+                                />
+                        <p:growl id="messages2" showDetail="true"/>
+
+
+                        <h:panelGrid columns="2" id="newDocumentPanelGrid"
+                                     rendered="#{documentController.newDocument.link != null}">
+                            <h:outputLabel for="newDocumentName" value="Имя документа: *"/>
+                            <p:inputText id="newDocumentName" required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение"
+                                         value="#{documentController.newDocument.name}">
+                                <f:validateLength minimum="2"/>
+                            </p:inputText>
+                            <h:outputLabel/><p:message for="newDocumentName"/>
+                            <h:outputLabel for="newDocumentTitle" value="Описание документа: *"/>
+                            <p:inputText id="newDocumentTitle" required="true" size="30"
+                                         requiredMessage="Заполните обязательное поле"
+                                         validatorMessage="Недопустимое значение"
+                                         value="#{documentController.newDocument.description}">
+                                <f:validateLength minimum="2"/>
+                            </p:inputText>
+                            <h:outputLabel/><p:message for="newDocumentTitle"/>
+                            <h:outputLabel for="newDocumentIsPublic" value="Скрывать от гостей: "/>
+                            <p:selectBooleanCheckbox id="newDocumentIsPublic"
+                                                     value="#{documentController.newDocument.hidden}"/>
+                        </h:panelGrid>
+                        <h:panelGroup layout="block" columns="2"
+                                      rendered="#{documentController.newDocument.link != null}"
+                                      style="text-align: center">
+                            <p:commandButton value="Отмена" style="margin: 5px 25px;"
+                                             oncomplete="newDocumentDlg.hide()" immediate="true"/>
+                            <p:commandButton value="Создать" style="margin: 5px 25px;"
+                                             action="#{documentController.addDocument()}"
+                                             update=":form:documentsList"/>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:dialog>
+
+            </h:form>
+
+        </div>
+    </div>
+
+</h:body>
+</html>
+
+
